@@ -1,6 +1,6 @@
 #include "problem_arguments.hpp"
 #include <unistd.h>
-#include <iostream>
+#include <ostream>
 
 bool ParseProgramArguments(int argc, char *argv[], ProgramArguments &args) {
     int opt;
@@ -18,15 +18,9 @@ bool ParseProgramArguments(int argc, char *argv[], ProgramArguments &args) {
                 args.time = std::stoull(optarg);
                 break;
             }
-            case 'h':
-                [[fallthrough]];
-            default:
-                std::cerr << "Error in program`s arguments.\n"
-                          << "Correct format:\n"
-                          << "-p <path to problem JSON>\n"
-                          << "-s <path to solution JSON>\n"
-                          << "-t <time to work in second stage>\n";
+            default: {
                 return false;
+            }
         }
     }
 #ifdef DEBUG
