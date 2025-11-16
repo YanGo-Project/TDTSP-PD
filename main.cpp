@@ -38,7 +38,7 @@ Solution Solve(InputData &&input, const ProgramArguments& args) {
         .alpha = 25,
         .beta = 0.5,
         .nloop = 10,
-        .kMax = 4,
+        .kMax = 5,
         .p = 0.05,
         .max_iter_without_solution = 15,
         .max_crossover_candidates = 4,

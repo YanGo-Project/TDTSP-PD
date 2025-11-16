@@ -3,6 +3,8 @@
 #include <cassert>
 #include <utility>
 #include <random>
+#include <vector>
+#include <initializer_list>
 
 #ifdef DEBUG
 #include "../utils/debug.h"
@@ -150,9 +152,45 @@ namespace {
         return best; // RVO
     }
 
-    // TODO(): надо еще имплементировать
-    Solution OrOpt(const Solution &solution, const InputData &inputData) {
-        return solution;
+    Solution OrOpt(const Solution &solution, const InputData &inputData, size_t opt_size) {
+        const auto path_size = solution.tour.size();
+        auto temp = solution;
+        auto best_score = solution.score;
+        size_t best_i = 0, best_j = 0;
+
+        opt_size = std::min(opt_size, path_size - 2);
+
+        using vertexType = decltype(solution.tour)::value_type;
+
+        for (size_t i = 1; i + opt_size < path_size; ++i) {
+            temp = solution;
+            std::vector<vertexType> swap_elements(temp.tour.begin() + i, 
+                                           temp.tour.begin() + i + opt_size);
+            temp.tour.erase(temp.tour.begin() + i, temp.tour.begin() + i + opt_size);
+            
+            for (size_t j = 1; j < temp.tour.size(); ++j) {
+                temp.tour.insert(temp.tour.begin() + j, swap_elements.begin(), swap_elements.end());
+                auto [distance, time, score] = inputData.get_path_time_distance_score(temp.tour);
+                // возврат к старому положению
+                temp.tour.erase(temp.tour.begin() + j, temp.tour.begin() + j + opt_size);
+                if (best_score < score && time <= inputData.max_time && distance <= inputData.max_distance) {
+                    best_i = i, best_j = j;
+                };
+            }
+        }
+
+        temp = solution;
+        if (best_i && best_j) {
+            std::vector<vertexType> swap_elements(temp.tour.begin() + best_i, 
+                                                  temp.tour.begin() + best_i + opt_size);
+            temp.tour.erase(temp.tour.begin() + best_i, temp.tour.begin() + best_i + opt_size);
+            temp.tour.insert(temp.tour.begin() + best_j, swap_elements.begin(), swap_elements.end());
+
+            auto [distance, time, score] = inputData.get_path_time_distance_score(temp.tour);
+            temp.distance = distance, temp.time = time, temp.score = score;
+        }
+
+        return temp; // RVO
     }
 
     Solution DoubleBridge(const Solution &solution) {
@@ -229,7 +267,8 @@ Solution VND(Solution solution, int maxLevel, const InputData &inputData) {
             }
             default:
             case OptimizationType::OrOpt: {
-                temp = OrOpt(current, inputData);
+                size_t opt_size = 3 + (level > 5 ? level - 5 : 0);
+                temp = OrOpt(current, inputData, opt_size);
                 break;
             }
         }
@@ -280,7 +319,8 @@ Solution Perturbation(const Solution &solution, int maxLevel, double p, const In
             }
             default:
             case OptimizationType::OrOpt: {
-                temp = OrOpt(temp, inputData);
+                size_t opt_size = 3 + (k > 5 ? k - 5 : 0);
+                temp = OrOpt(temp, inputData, opt_size);
                 break;
             }
         }
