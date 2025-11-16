@@ -40,4 +40,9 @@
 # debug information files
 *.dwo
 
+# файлы сборки
 build/*
+
+# файлы для анализа экспериментов 
+*.png
+*.csv
