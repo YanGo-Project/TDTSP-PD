@@ -153,9 +153,9 @@ def print_statistics(df):
     
     print_separator()
     print("Среднее процентное улучшение:")
-    print(f"  Целевая функция: {df['score_improvement_pct'].mean():.2f}%")
-    print(f"  Время: {df['time_improvement_pct'].mean():.2f}%")
-    print(f"  Дистанция: {df['distance_improvement_pct'].mean():.2f}%")
+    print(f"Целевая функция: {df['score_improvement_pct'].mean():.2f}%")
+    print(f"Время: {df['time_improvement_pct'].mean():.2f}%")
+    print(f"Дистанция: {df['distance_improvement_pct'].mean():.2f}%")
     print_separator()
 
 def main():
