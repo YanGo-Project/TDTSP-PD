@@ -24,6 +24,10 @@ struct FirstStepAnswer {
     bool IsVertexInPath(points_type id);
 
     void AddVertex(points_type vertex);
+
+    std::string get_data_to_csv() {
+        return std::to_string(value) + "," + std::to_string(time) + "," + std::to_string(distance);
+    }
 };
 
 template<bool is_time_dependent = false>

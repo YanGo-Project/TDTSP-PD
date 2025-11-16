@@ -45,6 +45,10 @@ struct Solution {
         }
         return true;
     }
+
+    std::string get_data_to_csv() {
+        return std::to_string(score) + "," + std::to_string(time) + "," + std::to_string(distance);
+    }
 };
 
 inline std::ostream &operator<<(std::ostream &os, const Solution &solution) {

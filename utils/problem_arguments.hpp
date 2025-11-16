@@ -9,6 +9,8 @@ struct ProgramArguments {
     std::string problemJsonPath;
     std::string solutionJsonPath;
     uint64_t time;
+    std::string csv_file;
+    bool save_csv;
 };
 
 bool ParseProgramArguments(int argc, char *argv[], ProgramArguments &args);

@@ -2,9 +2,14 @@
 #include <unistd.h>
 #include <ostream>
 
+#ifdef DEBUG
+#include "debug.h"
+#endif
+
 bool ParseProgramArguments(int argc, char *argv[], ProgramArguments &args) {
     int opt;
-    while ((opt = getopt(argc, argv, "p:s:t:")) != -1) {
+    args.save_csv = false;
+    while ((opt = getopt(argc, argv, "p:s:t:c:")) != -1) {
         switch (opt) {
             case 'p': {
                 args.problemJsonPath = optarg;
@@ -16,6 +21,11 @@ bool ParseProgramArguments(int argc, char *argv[], ProgramArguments &args) {
             }
             case 't': {
                 args.time = std::stoull(optarg);
+                break;
+            }
+            case 'c': {
+                args.csv_file = optarg;
+                args.save_csv = true;
                 break;
             }
             default: {
