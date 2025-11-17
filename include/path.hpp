@@ -34,10 +34,6 @@ struct Solution {
         if (score != other.score) {
             return false;
         }
-        if (tour.size() != other.tour.size()) {
-            return false;
-        }
-
         for (size_t i = 0; i < tour.size(); ++i) {
             if (tour[i] != other.tour[i]) {
                 return false;

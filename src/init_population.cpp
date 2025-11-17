@@ -13,7 +13,7 @@ void PopulationInitializer::initialize_population(int path_size, int population_
     while (population.size() < population_size) {
 
         if (total_iterations == max_iterations) {
-            return;
+            break;
         }
 
         Solution local_solution(0);
@@ -50,7 +50,8 @@ void PopulationInitializer::initialize_population(int path_size, int population_
 #ifdef DEBUG
     std::cout << "Generated " << population.size() << " tours\n";
     std::cout << "Random iterations: " << random_iterations << "\nGrasp iterations: " << grasp_iterations << "\n";
-    std::cout << "Total iterations: " << total_iterations << std::endl;
+    std::cout << "Total iterations: " << total_iterations << "\n";
+    std::cout << "Population size: " << population.size() << std::endl;
 #endif
 }
 

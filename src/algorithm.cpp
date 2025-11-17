@@ -31,6 +31,23 @@ Solution applyTspTDPDP(Solution&& solution, const InputData &inputData, const Me
         path = VNS(path, inputData, params.nloop, params.kMax, params.p);
     }
 
+    // удаляем повторы после оптимизации чтобы на вход кроссовера не шли два одинаковых пути
+    // и мы не получали тот же после него
+    std::vector<Solution> seen;
+    seen.reserve(population.size());
+    for (auto& solution: population) {
+        if (std::find(seen.begin(), seen.end(), solution) == seen.end()) {
+            seen.emplace_back(std::move(solution));
+        }
+    }
+    population = std::move(seen);
+
+
+
+#ifdef DEBUG
+    std::cout << "Population size after VNS optimization and delete dubplicates:" << population.size() << std::endl;
+#endif
+
     std::mt19937 rng;
     auto candidates_size = std::min(population.size(), params.max_crossover_candidates);
     int iter_without_solution = 0;
@@ -55,6 +72,14 @@ Solution applyTspTDPDP(Solution&& solution, const InputData &inputData, const Me
                       << crossoverSolution.distance << " vs input max_distance "  << inputData.max_distance << std::endl;
 #endif
             iter_without_solution += 1;
+            continue;
+        }
+
+        if (std::any_of(population.cbegin(), population.cend(),
+                [&crossoverSolution](const auto &existed_solution) { return existed_solution == crossoverSolution; })) {
+#ifdef DEBUG
+            std::cout << "This solution in population, skip:\n" << crossoverSolution << std::endl;
+#endif
             continue;
         }
 
