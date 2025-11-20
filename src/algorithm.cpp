@@ -71,7 +71,7 @@ Solution applyTspTDPDP(Solution&& solution, const InputData &inputData, const Me
                       << crossoverSolution.time << " vs input max_time: " << inputData.max_time << " "
                       << crossoverSolution.distance << " vs input max_distance "  << inputData.max_distance << std::endl;
 #endif
-            iter_without_solution += 1;
+            ++iter_without_solution;
             continue;
         }
 
@@ -80,6 +80,7 @@ Solution applyTspTDPDP(Solution&& solution, const InputData &inputData, const Me
 #ifdef DEBUG
             std::cout << "This solution in population, skip:\n" << crossoverSolution << std::endl;
 #endif
+            ++iter_without_solution;
             continue;
         }
 
@@ -96,7 +97,7 @@ Solution applyTspTDPDP(Solution&& solution, const InputData &inputData, const Me
 
         // в случае если не улучшили лучшее решение
         if (crossoverSolution.score > population[0].score) {
-            iter_without_solution = 0;;
+            iter_without_solution = 0;
 #ifdef DEBUG
             std::cout << "Updated best solution\n";
 #endif

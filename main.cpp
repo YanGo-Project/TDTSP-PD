@@ -35,11 +35,11 @@ Solution Solve(InputData &&input, const ProgramArguments& args) {
 
     MetaParameters params {
         .population_size = 10,
-        .alpha = 25,
-        .beta = 0.5,
+        .alpha = 15,
+        .beta = 0.2,
         .nloop = 10,
-        .kMax = 5,
-        .p = 0.05,
+        .kMax = 8,
+        .p = 0.1,
         .max_iter_without_solution = 15,
         .max_crossover_candidates = 4,
     };
@@ -70,6 +70,8 @@ int main(int argc, char *argv[]) {
     }
 
     auto answer = Solve(std::move(input), args);
+
+    std::cout << answer << std::endl;
 
     return 0;
 }
