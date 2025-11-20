@@ -1,6 +1,7 @@
 #pragma once
 
 #include "problem_arguments.hpp"
+#include "../include/path.hpp"
 #include <nlohmann/json.hpp>
 
 namespace JsonParser {
@@ -9,4 +10,6 @@ namespace JsonParser {
     bool ParseSolutionFromJson(const std::string &jsonPath, OutData& solution);
 
     bool WriteSolutionToJsonFile(const std::string &jsonPath, OutData &&solution);
+
+    bool WriteSolutionTojsonFile(const std::string& jsonPath, Solution && solution);
 }

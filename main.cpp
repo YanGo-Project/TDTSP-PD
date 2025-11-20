@@ -69,9 +69,9 @@ int main(int argc, char *argv[]) {
         return -2;
     }
 
-    auto answer = Solve(std::move(input), args);
-
-    std::cout << answer << std::endl;
+    if (!JsonParser::WriteSolutionTojsonFile(args.solutionJsonPath, Solve(std::move(input), args))) {
+        return -3;
+    }
 
     return 0;
 }
