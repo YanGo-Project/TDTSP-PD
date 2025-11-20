@@ -6,12 +6,27 @@
 
 #include <random>
 #include <algorithm>
+#include <chrono>
 
 #ifdef DEBUG
 #include "../utils/debug.h"
 #endif
 
-Solution applyTspTDPDP(Solution&& solution, const InputData &inputData, const MetaParameters &params) {
+namespace {
+    bool is_time_limit(decltype(std::chrono::steady_clock::now()) start, uint64_t max_time) {
+        auto current = std::chrono::steady_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
+            current - start
+        ).count();
+
+        return elapsed > max_time;
+    }
+}
+
+Solution applyTspTDPDP(Solution&& solution, const InputData &inputData, const MetaParameters &params, uint64_t max_time) {
+
+    auto start = std::chrono::steady_clock::now();
+
     auto populationInitializer = PopulationInitializer();
     auto crossover = Crossover();
 
@@ -28,6 +43,13 @@ Solution applyTspTDPDP(Solution&& solution, const InputData &inputData, const Me
                                                 population);
 
     for (auto &path: population) {
+        // проверка что выписываемся в ограничения по времени
+        if (is_time_limit(start, max_time)) [[unlikely]] {
+            std::sort(population.begin(), population.end(), 
+              [](const auto &sol1, const auto &sol2) { return sol1.score > sol2.score; });
+              
+            return population[0];
+        }
         path = VNS(path, inputData, params.nloop, params.kMax, params.p);
     }
 
@@ -48,11 +70,17 @@ Solution applyTspTDPDP(Solution&& solution, const InputData &inputData, const Me
     std::cout << "Population size after VNS optimization and delete dubplicates:" << population.size() << std::endl;
 #endif
 
+    uint64_t iters = 0;
     std::mt19937 rng;
     auto candidates_size = std::min(population.size(), params.max_crossover_candidates);
     int iter_without_solution = 0;
 
     while (iter_without_solution < params.max_iter_without_solution) {
+
+        // проверка что выписываемся в ограничения по времени
+        if (is_time_limit(start, max_time)) [[unlikely]] {
+            break;
+        }
 
         // среди случайных candidates_size туров выбираем два лучших
         std::shuffle(population.begin(), population.end(), rng);

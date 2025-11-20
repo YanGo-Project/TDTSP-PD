@@ -44,7 +44,7 @@ Solution Solve(InputData &&input, const ProgramArguments& args) {
         .max_crossover_candidates = 4,
     };
 
-    auto answer = applyTspTDPDP(std::move(solution), input, params);
+    auto answer = applyTspTDPDP(std::move(solution), input, params, args.time);
     
     for (size_t i = 0; i < answer.tour.size(); ++i) {
         answer.tour[i] = input.from_new_to_old[answer.tour[i]];

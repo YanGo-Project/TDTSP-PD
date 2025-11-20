@@ -13,4 +13,4 @@ struct MetaParameters {
     size_t max_crossover_candidates;
 };
 
-Solution applyTspTDPDP(Solution&& solution, const InputData &inputData, const MetaParameters &params);
+Solution applyTspTDPDP(Solution&& solution, const InputData &inputData, const MetaParameters &params, uint64_t max_time);
