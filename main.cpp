@@ -44,15 +44,26 @@ Solution Solve(InputData &&input, const ProgramArguments& args) {
         .max_crossover_candidates = 4,
     };
 
-    auto answer = applyTspTDPDP(std::move(solution), input, params, args.time);
+    auto ctx = Context {
+        .params = params,
+        .args = args
+    };
+
+    auto answer = applyTspTDPDP(std::move(solution), input, ctx);
     
     for (size_t i = 0; i < answer.tour.size(); ++i) {
         answer.tour[i] = input.from_new_to_old[answer.tour[i]];
     }
 
-    if (args.save_csv) {
+    if (args.save_csv) [[unlikely]] {
         std::ofstream csv(args.csv_file, std::ios::app);
-        csv << args.problemJsonPath << "," << firstStepAnswer.get_data_to_csv() << "," << answer.get_data_to_csv() << std::endl;
+        csv << args.problemJsonPath << "," << firstStepAnswer.get_data_to_csv() << ",0\n";
+#ifdef SAVE_STEPS
+        for (const auto& info: ctx.time_iterations) {
+            csv << args.problemJsonPath << "," << info.score << "," << info.time << "," << info.distance << "," << info.timestamp << "\n";
+
+#endif
+        csv << args.problemJsonPath << "," << answer.get_data_to_csv() << "," << args.time << std::endl;
     }
 
     return answer;

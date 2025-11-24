@@ -44,7 +44,7 @@ fi
 
 TOTAL_FILES=${#FILES[@]}
 
-echo "file_name,score_first_step,time_first_step,distance_first_step,score_second_step,time_second_step,distance_second_step" >> "$OUTPUT_CSV"
+echo "file_name,score,time,distance,timestamp" >> "$OUTPUT_CSV"
 
 CURRENT_FILE=0
 PROCESSED_FILES=0

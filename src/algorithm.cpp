@@ -21,11 +21,48 @@ namespace {
 
         return elapsed > max_time;
     }
+
+#ifdef SAVE_STEPS
+    uint64_t get_elapsed_seconds(decltype(std::chrono::steady_clock::now()) start) {
+        auto current = std::chrono::steady_clock::now();
+        return std::chrono::duration_cast<std::chrono::seconds>(
+            current - start
+        ).count();
+    }
+
+    void log_best_solution_if_needed(
+        decltype(std::chrono::steady_clock::now()) start,
+        const Solution& best_solution,
+        Context& ctx,
+        uint64_t& last_logged_time
+    ) {
+        uint64_t elapsed = get_elapsed_seconds(start);
+
+        if (elapsed >= last_logged_time + 5) {
+
+            last_logged_time = (elapsed / 5) * 5;
+                        
+            ctx.time_iterations.push_back(
+                {
+                    .distance = best_solution.distance,
+                    .score = static_cast<uint32_t>(best_solution.score),
+                    .time = best_solution.time,
+                    .timestamp = last_logged_time
+                }
+            );
+        }
+    }
+#endif
 }
 
-Solution applyTspTDPDP(Solution&& solution, const InputData &inputData, const MetaParameters &params, uint64_t max_time) {
+Solution applyTspTDPDP(Solution&& solution, const InputData &inputData, Context& ctx) {
 
     auto start = std::chrono::steady_clock::now();
+    const auto& params = ctx.params;
+    auto max_time = ctx.args.time;
+#ifdef SAVE_STEPS
+    uint64_t last_logged_time = 0;
+#endif
 
     auto populationInitializer = PopulationInitializer();
     auto crossover = Crossover();
@@ -41,8 +78,13 @@ Solution applyTspTDPDP(Solution&& solution, const InputData &inputData, const Me
                                                 params.alpha,
                                                 inputData,
                                                 population);
+#ifdef SAVE_STEPS
+    std::sort(population.begin(), population.end(), 
+              [](const auto &sol1, const auto &sol2) { return sol1.score > sol2.score; });
+    log_best_solution_if_needed(start, population[0], ctx, last_logged_time);
+#endif
 
-    for (auto &path: population) {
+    for (size_t i = 0; i < population.size(); ++i) {
         // проверка что выписываемся в ограничения по времени
         if (is_time_limit(start, max_time)) [[unlikely]] {
             std::sort(population.begin(), population.end(), 
@@ -50,8 +92,20 @@ Solution applyTspTDPDP(Solution&& solution, const InputData &inputData, const Me
               
             return population[0];
         }
-        path = VNS(path, inputData, params.nloop, params.kMax, params.p);
+#ifdef SAVE_STEPS
+    std::sort(population.begin(), population.begin() + i, 
+              [](const auto &sol1, const auto &sol2) { return sol1.score > sol2.score; });
+    log_best_solution_if_needed(start, population[0], ctx, last_logged_time);
+#endif
+
+        population[i] = VNS(population[i], inputData, params.nloop, params.kMax, params.p);
     }
+    
+#ifdef SAVE_STEPS
+    std::sort(population.begin(), population.end(), 
+              [](const auto &sol1, const auto &sol2) { return sol1.score > sol2.score; });
+    log_best_solution_if_needed(start, population[0], ctx, last_logged_time);
+#endif
 
     // удаляем повторы после оптимизации чтобы на вход кроссовера не шли два одинаковых пути
     // и мы не получали тот же после него
@@ -64,8 +118,6 @@ Solution applyTspTDPDP(Solution&& solution, const InputData &inputData, const Me
     }
     population = std::move(seen);
 
-
-
 #ifdef DEBUG
     std::cout << "Population size after VNS optimization and delete dubplicates:" << population.size() << std::endl;
 #endif
@@ -76,6 +128,12 @@ Solution applyTspTDPDP(Solution&& solution, const InputData &inputData, const Me
     int iter_without_solution = 0;
 
     while (iter_without_solution < params.max_iter_without_solution) {
+
+#ifdef SAVE_STEPS
+        std::sort(population.begin(), population.end(), 
+              [](const auto &sol1, const auto &sol2) { return sol1.score > sol2.score; });
+        log_best_solution_if_needed(start, population[0], ctx, last_logged_time);
+#endif
 
         // проверка что выписываемся в ограничения по времени
         if (is_time_limit(start, max_time)) [[unlikely]] {
@@ -139,6 +197,6 @@ Solution applyTspTDPDP(Solution&& solution, const InputData &inputData, const Me
 
     std::sort(population.begin(), population.end(), 
               [](const auto &sol1, const auto &sol2) { return sol1.score > sol2.score; });
-              
+            
     return population[0];
 }

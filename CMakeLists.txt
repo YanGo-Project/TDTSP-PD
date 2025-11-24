@@ -40,3 +40,8 @@ target_link_libraries(app PRIVATE utils algo)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_definitions(-DDEBUG)
 endif()
+
+option(SAVE_STEPS "save each 5 seconds" OFF)
+if (SAVE_STEPS)
+    add_definitions(-DSAVE_STEPS)
+endif()
