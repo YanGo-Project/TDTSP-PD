@@ -14,7 +14,15 @@ using points_type = FirstStepAnswer::points_type;
 
 Solution Solve(InputData &&input, const ProgramArguments& args) {
 
-    auto firstStepAnswer = DoFirstStep<true>(input);
+    auto firstStepAnswers = DoFirstStep<true>(input);
+    
+    if (firstStepAnswers.empty()) {
+        // если нет решений, возвращаем пустое решение
+        return {0};
+    }
+
+    // Берем лучшее решение (первое в отсортированном векторе)
+    const auto& firstStepAnswer = firstStepAnswers[0];
     
     // новый маршрут будет иметь вид 0 -> 1 -> 2 -> ... -> n -> 0
     std::vector<points_type> tour(firstStepAnswer.vertexes.size());
@@ -57,11 +65,11 @@ Solution Solve(InputData &&input, const ProgramArguments& args) {
 
     if (args.save_csv) [[unlikely]] {
         std::ofstream csv(args.csv_file, std::ios::app);
-        csv << args.problemJsonPath << "," << firstStepAnswer.get_data_to_csv() << ",0\n";
+        csv << args.problemJsonPath << "," << firstStepAnswers[0].get_data_to_csv() << ",0\n";
 #ifdef SAVE_STEPS
         for (const auto& info: ctx.time_iterations) {
             csv << args.problemJsonPath << "," << info.score << "," << info.time << "," << info.distance << "," << info.timestamp << "\n";
-
+        }
 #endif
         csv << args.problemJsonPath << "," << answer.get_data_to_csv() << "," << args.time << std::endl;
     }
