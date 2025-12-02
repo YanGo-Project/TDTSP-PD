@@ -21,6 +21,11 @@ Solution Solve(InputData &&input, const ProgramArguments& args) {
         return {0};
     }
 
+    for (const auto& sol : firstStepAnswers) {
+        std::cout << sol << std::endl;
+    }
+
+    return {0};
     // Берем лучшее решение (первое в отсортированном векторе)
     const auto& firstStepAnswer = firstStepAnswers[0];
     

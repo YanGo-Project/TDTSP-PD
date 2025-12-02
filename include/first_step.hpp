@@ -35,10 +35,7 @@ struct FirstStepAnswer {
     }
 
     bool operator==(const FirstStepAnswer& other) const {
-        return value == other.value && 
-               distance == other.distance && 
-               time == other.time &&
-               std::set<points_type>(vertexes.begin(), vertexes.end()) == 
+        return std::set<points_type>(vertexes.begin(), vertexes.end()) == 
                std::set<points_type>(other.vertexes.begin(), other.vertexes.end());
     }
 };

@@ -4,7 +4,8 @@
 #include <iostream>
 
 namespace {
-    constexpr size_t TOP_SOLUTIONS_COUNT = 1;
+    constexpr size_t TOP_SOLUTIONS_COUNT = 3;
+    constexpr double THRESHOLD = 0.95; 
     
     // вставляем решение в отсортированный список лучших решений, сохраняя только топ N
     void insertTopSolution(std::vector<FirstStepAnswer>& solutions, const FirstStepAnswer& newSolution) {
@@ -13,8 +14,6 @@ namespace {
             return;
         }
 
-        // проверяем, что новое решение не хуже лучшего на 10%
-        constexpr double THRESHOLD = 0.9; 
         if (newSolution.value < solutions[0].value * THRESHOLD) {
             return;
         }
@@ -78,7 +77,12 @@ std::vector<FirstStepAnswer> DoFirstStep(const InputData &input) {
 
     for (points_type cur_load = 0; cur_load <= max_load; ++cur_load) {
         bool find_update_point = false;
+
+        std::cout << "Cur load: " << cur_load << " of: " << max_load << std::endl;
+
         for (points_type j = 0; j < points_count; ++j) {
+
+            std::cout << "Iter for j:" << j << " of " << points_count << std::endl;
 
             std::vector<FirstStepAnswer> candidates;
 
