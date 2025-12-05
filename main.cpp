@@ -14,18 +14,13 @@ using points_type = FirstStepAnswer::points_type;
 
 Solution Solve(InputData &&input, const ProgramArguments& args) {
 
-    auto firstStepAnswers = DoFirstStep<true>(input);
+    auto firstStepAnswers = DoFirstStep<false>(input);
     
     if (firstStepAnswers.empty()) {
         // если нет решений, возвращаем пустое решение
         return {0};
     }
 
-    for (const auto& sol : firstStepAnswers) {
-        std::cout << sol << std::endl;
-    }
-
-    return {0};
     // Берем лучшее решение (первое в отсортированном векторе)
     const auto& firstStepAnswer = firstStepAnswers[0];
     
