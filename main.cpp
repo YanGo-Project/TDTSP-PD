@@ -57,17 +57,6 @@ Solution Optimize(const FirstStepAnswer& firstStepAnswer, InputData& input, cons
         answer.tour[i] = input.from_new_to_old[answer.tour[i]];
     }
 
-    if (args.save_csv) [[unlikely]] {
-        std::ofstream csv(args.csv_file, std::ios::app);
-        csv << args.problemJsonPath << "," << firstStepAnswer.get_data_to_csv() << ",0\n";
-#ifdef SAVE_STEPS
-        for (const auto& info: ctx.time_iterations) {
-            csv << args.problemJsonPath << "," << info.score << "," << info.time << "," << info.distance << "," << info.timestamp << "\n";
-        }
-#endif
-        csv << args.problemJsonPath << "," << answer.get_data_to_csv() << "," << args.time << std::endl;
-    }
-
     return answer;
 }
 
@@ -134,6 +123,11 @@ Solution Solve(InputData &&input, const ProgramArguments& args) {
 
     if (best_solution == nullptr) {
         return {0};
+    }
+
+    if (args.save_csv) [[unlikely]] {
+        std::ofstream csv(args.csv_file, std::ios::app);
+        csv << args.problemJsonPath << "," << (*best_solution).get_data_to_csv() << "\n";
     }
 
     std::cout << "\nBest solution (score: " << best_solution->score << "):\n";

@@ -22,7 +22,7 @@ FILES=(
     19.json 
     20.json 
     22.json 
-    24.json 
+    24.json # проверить что тут может вызывать бесконечный цикл
     3.json  
     5.json  
     7.json  
@@ -34,7 +34,7 @@ APP_PATH="${1:-./build/app}"
 OUTPUT_CSV="${2:-results.csv}"
 RUNS_PER_FILE="${3:-5}"
 PATH_TO_JSONS="${4:-./jsons}"
-TIME_LIMIT=10000
+TIME_LIMIT=50
 
 if [ ! -f "$APP_PATH" ]; then
     echo "Ошибка: приложение не найдено по пути $APP_PATH"
