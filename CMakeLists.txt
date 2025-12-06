@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 find_package(nlohmann_json REQUIRED)
 
+add_compile_options(-O3)
+
 set(UTILS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/utils")
 set(UTILS_SOURCES
         "${UTILS_DIR}/json_parser.cpp"
@@ -35,7 +37,7 @@ target_link_libraries(algo PUBLIC utils)
 set(SOURCES main.cpp)
 
 add_executable(app ${SOURCES})
-target_link_libraries(app PRIVATE utils algo)
+target_link_libraries(app PRIVATE algo)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_definitions(-DDEBUG)

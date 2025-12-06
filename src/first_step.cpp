@@ -5,16 +5,18 @@
 #include <limits>
 #include <bitset>
 
-constexpr size_t TOP_SOLUTIONS_COUNT = 3;
+constexpr size_t TOP_SOLUTIONS_COUNT = 5;
 
 namespace {
     using score_type = FirstStepAnswer::score_type;
     using points_type = FirstStepAnswer::points_type;
 
+    template <size_t bitset_size = std::numeric_limits<points_type>::max()>
     struct Candidate {
-        static constexpr size_t MAX_POINTS = std::numeric_limits<points_type>::max();
+        static constexpr size_t MAX_POINTS = bitset_size;
 
-        // посещения в пути
+        // посещения в пути, вершина с индексом i лежит в ячейке visited[i - 1],
+        // чтобы не было коллизиий с депо
         std::bitset<MAX_POINTS> visited;
 
         // информация о метриках
@@ -22,45 +24,48 @@ namespace {
         score_type time;
         score_type distance;
 
+        points_type load;
+
         // для восстановления из dp[cur_load][last_vertex][candidate_idx]
         size_t candidate_idx;
         points_type last_vertex;
-        size_t load;
 
-        static Candidate CraeteCandidateFromTour(
-            const FirstStepAnswer solution,
-            size_t candidate_idx,
-            size_t cur_load
-        ) {
-            Candidate candidate;
-
-            for (auto v : solution.vertexes) {
-                candidate.visited.set(v);
+        inline bool IsVertexInPath(const points_type id) const {
+            if (id == 0) [[unlikely]] {
+                return false;
             }
 
-            candidate.candidate_idx = candidate_idx;
-            candidate.last_vertex = solution.vertexes.back();
-
-            candidate.load = cur_load;
-
-            return candidate; // RVO
+            return visited[id - 1];
         }
 
-        FirstStepAnswer CreateTourFromCandidate(
-            const std::vector<std::vector<std::vector<FirstStepAnswer>>>& dp
-        ) const {
+        FirstStepAnswer CreateAnswer(const std::vector<std::vector<std::vector<Candidate<bitset_size>>>>& dp) const {
             FirstStepAnswer answer;
-            answer.vertexes = dp[load][last_vertex][candidate_idx].vertexes;
-
+            answer.vertexes.reserve(visited.count() + 1);
             answer.value = value;
-            answer.distance = distance;
             answer.time = time;
+            answer.distance = distance;
 
-            return answer; // RVO
+            auto next_load = load - 1;
+            auto next_vertex = last_vertex;
+            auto next_candidate_idx = candidate_idx;
+
+            while (next_load > 0) {
+                answer.vertexes.push_back(next_vertex);
+                const auto& cand = dp[next_load - 1][next_vertex][next_candidate_idx];
+
+                next_load -= 1;
+                next_vertex = cand.last_vertex;
+                next_candidate_idx = cand.candidate_idx;
+            }
+
+            std::reverse(answer.vertexes.begin(), answer.vertexes.end());
+
+            return answer; // RVO 
         }
     };
 
-    inline bool isCandidateGood(const std::vector<Candidate>& candidates, score_type value) {
+    template <size_t bitset_size>
+    inline bool isCandidateGood(const std::vector<Candidate<bitset_size>>& candidates, score_type value) {
         if (candidates.empty() || candidates.size() < TOP_SOLUTIONS_COUNT) [[unlikely]] {
             return true;
         }
@@ -68,7 +73,8 @@ namespace {
         return value > candidates.back().value;
     }
     
-    inline void insertTopCandidate(std::vector<Candidate>& candidates, Candidate&& newCandidate) {
+    template <size_t bitset_size>
+    inline void insertTopCandidate(std::vector<Candidate<bitset_size>>& candidates, Candidate<bitset_size>&& newCandidate) {
 
         bool duplicated = false;
         for (auto& existed_candidate : candidates) {
@@ -98,21 +104,10 @@ namespace {
             candidates.resize(TOP_SOLUTIONS_COUNT);
         }
     }
+
 }
 
-bool FirstStepAnswer::IsVertexInPath(const FirstStepAnswer::points_type id) const {
-    if (id == 0) {
-        return false;
-    }
-    return std::any_of(vertexes.begin(), vertexes.end(),
-                       [&](auto v_idx) { return id == v_idx; });
-}
-
-void FirstStepAnswer::AddVertex(FirstStepAnswer::points_type vertex) {
-    vertexes.push_back(vertex);
-}
-
-template<bool is_time_dependent>
+template<size_t bitset_size, bool is_time_dependent>
 std::vector<FirstStepAnswer> DoFirstStep(const InputData &input) {
 
     using score_type = FirstStepAnswer::score_type;
@@ -124,22 +119,22 @@ std::vector<FirstStepAnswer> DoFirstStep(const InputData &input) {
     auto min_load = input.min_load;
     auto points_count = input.points_count;
 
-    // dp теперь хранит векторы лучших решений для каждого состояния
-    std::vector<std::vector<std::vector<FirstStepAnswer>>> dp(
+    // dp теперь хранит векторы сжатых представлений решений для каждого состояния
+    std::vector<std::vector<std::vector<Candidate<bitset_size>>>> dp(
         input.max_load + 2,
-        std::vector<std::vector<FirstStepAnswer>>(points_count)
+        std::vector<std::vector<Candidate<bitset_size>>>(points_count)
     );
 
     // инициализация начального состояния
-    FirstStepAnswer initial;
+    Candidate<bitset_size> initial;
     initial.value = 0;
     initial.time = 0;
     initial.distance = 0;
-    initial.vertexes = {0};
-    dp[0][0].push_back(initial);
+    initial.load = 0;
+    dp[0][0].push_back(std::move(initial));
 
 
-    std::vector<Candidate> candidates;
+    std::vector<Candidate<bitset_size>> candidates;
     candidates.reserve(TOP_SOLUTIONS_COUNT);
 
     for (points_type cur_load = 0; cur_load <= max_load; ++cur_load) {
@@ -159,7 +154,8 @@ std::vector<FirstStepAnswer> DoFirstStep(const InputData &input) {
                 // делаем проверку:
                 // 1. вершины не совпали   
                 // 2. есть такой путь с cur_load вершинами, который заканчивается в i
-                if (i != j && !dp[cur_load][i].empty()) {
+                if (i != j && !dp[cur_load][i].empty()) [[likely]] {
+
                     // перебираем все решения из dp[cur_load][i]
                     for (size_t candidate_idx = 0; candidate_idx < dp[cur_load][i].size(); ++candidate_idx) {
                         const auto& prev_solution = dp[cur_load][i][candidate_idx];
@@ -183,15 +179,25 @@ std::vector<FirstStepAnswer> DoFirstStep(const InputData &input) {
 
                             // проверки найденного пути на целевую функцию, максимальное время пути и максимальную дистанцию
                             if (new_point_time <= max_time &&
-                                new_point_dist <= max_dist) {
-
-                                if (isCandidateGood(candidates, new_point_score)) {
-                                    auto new_candidate = Candidate::CraeteCandidateFromTour(prev_solution, candidate_idx, cur_load);
-                                    new_candidate.time = new_point_time;
-                                    new_candidate.distance = new_point_dist;
-                                    new_candidate.value = new_point_score;
-                                    insertTopCandidate(candidates, std::move(new_candidate));
+                                new_point_dist <= max_dist && 
+                                isCandidateGood(candidates, new_point_score)
+                            ) {
+                                auto new_visited = prev_solution.visited;
+                                if (j > 0) {
+                                    new_visited.set(j - 1);
                                 }
+                                insertTopCandidate(
+                                    candidates,
+                                    Candidate<bitset_size> {
+                                        .time = new_point_time,
+                                        .distance = new_point_dist,
+                                        .value = new_point_score,
+                                        .visited = std::move(new_visited),
+                                        .candidate_idx = candidate_idx,
+                                        .last_vertex = i,
+                                        .load = cur_load
+                                    }
+                                );
                             }
                         }
                     }
@@ -199,16 +205,7 @@ std::vector<FirstStepAnswer> DoFirstStep(const InputData &input) {
             }
 
             if (!candidates.empty()) [[likely]] {
-                // восстанавливаем пути по кандидатам
-                std::vector<FirstStepAnswer> solutions;
-                solutions.reserve(candidates.size());
-                for (const auto& candidate : candidates) {
-                    solutions.emplace_back(candidate.CreateTourFromCandidate(dp));
-                    // добавляем текущую вешинку 
-                    // upd. там уже хранятся корректные метрики в кандидате
-                    solutions.back().vertexes.emplace_back(j);
-                }
-                dp[cur_load + 1][j] = std::move(solutions);
+                dp[cur_load + 1][j] = std::move(candidates);
                 find_update_point = true;
             }
         }
@@ -220,19 +217,13 @@ std::vector<FirstStepAnswer> DoFirstStep(const InputData &input) {
     }
 
     // собираем все лучшие решения из всех допустимых состояний
-    std::vector<Candidate> answer_candidates;
+    std::vector<Candidate<bitset_size>> answer_candidates;
     answer_candidates.reserve(TOP_SOLUTIONS_COUNT);
 
     for (points_type cur_load = min_load + 1; cur_load <= max_load + 1; ++cur_load) {
-        for (size_t candidate_idx = 0; candidate_idx < dp[cur_load][0].size(); ++candidate_idx) {
-            const auto& solution = dp[cur_load][0][candidate_idx];
-
-            if (isCandidateGood(answer_candidates, solution.value)) {
-                auto answer_candidate =  Candidate::CraeteCandidateFromTour(solution, candidate_idx, cur_load);
-                answer_candidate.time = solution.time;
-                answer_candidate.distance = solution.distance;
-                answer_candidate.value = solution.value;
-                insertTopCandidate(answer_candidates, std::move(answer_candidate));
+        for (auto& candidate : dp[cur_load][0]) {
+            if (isCandidateGood(answer_candidates, candidate.value)) {
+                insertTopCandidate(answer_candidates, std::move(candidate));
             }
         }
     }
@@ -242,7 +233,7 @@ std::vector<FirstStepAnswer> DoFirstStep(const InputData &input) {
 
     // восстанавливаем лучшие решения из кандидатов
     for (const auto& candidate: answer_candidates) {
-        answer_solutions.emplace_back(candidate.CreateTourFromCandidate(dp));
+        answer_solutions.emplace_back(candidate.CreateAnswer(dp));
     }
     return answer_solutions;
 }
@@ -260,6 +251,13 @@ std::ostream &operator<<(std::ostream &os, const FirstStepAnswer &answer) {
     return os;
 }
 
-template std::vector<FirstStepAnswer> DoFirstStep<true>(const InputData &input);
+template std::vector<FirstStepAnswer> DoFirstStep<128, true>(const InputData &input);
+template std::vector<FirstStepAnswer> DoFirstStep<256, true>(const InputData &input);
+template std::vector<FirstStepAnswer> DoFirstStep<512, true>(const InputData &input);
+template std::vector<FirstStepAnswer> DoFirstStep<std::numeric_limits<InputData::points_type>::max(), true>(const InputData &input);
 
-template std::vector<FirstStepAnswer> DoFirstStep<false>(const InputData &input);
+
+template std::vector<FirstStepAnswer> DoFirstStep<128, false>(const InputData &input);
+template std::vector<FirstStepAnswer> DoFirstStep<256, false>(const InputData &input);
+template std::vector<FirstStepAnswer> DoFirstStep<512, false>(const InputData &input);
+template std::vector<FirstStepAnswer> DoFirstStep<std::numeric_limits<InputData::points_type>::max(), false>(const InputData &input);

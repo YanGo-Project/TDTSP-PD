@@ -9,21 +9,15 @@
 
 #include <iostream>
 #include <fstream>
+#include <thread>
+#include <vector>
+#include <algorithm>
+#include <optional>
 
 using points_type = FirstStepAnswer::points_type;
 
-Solution Solve(InputData &&input, const ProgramArguments& args) {
+Solution Optimize(const FirstStepAnswer& firstStepAnswer, InputData& input, const ProgramArguments& args) {
 
-    auto firstStepAnswers = DoFirstStep<false>(input);
-    
-    if (firstStepAnswers.empty()) {
-        // если нет решений, возвращаем пустое решение
-        return {0};
-    }
-
-    // Берем лучшее решение (первое в отсортированном векторе)
-    const auto& firstStepAnswer = firstStepAnswers[0];
-    
     // новый маршрут будет иметь вид 0 -> 1 -> 2 -> ... -> n -> 0
     std::vector<points_type> tour(firstStepAnswer.vertexes.size());
     // отображение из новых вершин в старые индексы
@@ -65,7 +59,7 @@ Solution Solve(InputData &&input, const ProgramArguments& args) {
 
     if (args.save_csv) [[unlikely]] {
         std::ofstream csv(args.csv_file, std::ios::app);
-        csv << args.problemJsonPath << "," << firstStepAnswers[0].get_data_to_csv() << ",0\n";
+        csv << args.problemJsonPath << "," << firstStepAnswer.get_data_to_csv() << ",0\n";
 #ifdef SAVE_STEPS
         for (const auto& info: ctx.time_iterations) {
             csv << args.problemJsonPath << "," << info.score << "," << info.time << "," << info.distance << "," << info.timestamp << "\n";
@@ -75,6 +69,77 @@ Solution Solve(InputData &&input, const ProgramArguments& args) {
     }
 
     return answer;
+}
+
+Solution Solve(InputData &&input, const ProgramArguments& args) {
+
+    std::vector<FirstStepAnswer> firstStepAnswers;
+
+    // нужно чтобы нам bitset был хоть сколько-то гибким
+    if (input.points_count < 128) {
+        firstStepAnswers = DoFirstStep<128, true>(input);
+    } else if (input.points_count < 256) {
+        firstStepAnswers = DoFirstStep<256, true>(input);
+    } else if (input.points_count < 512) {
+        firstStepAnswers = DoFirstStep<512, true>(input);
+    } else {
+        firstStepAnswers = DoFirstStep<std::numeric_limits<InputData::points_type>::max(), true>(input);
+    }
+    
+    // сохраняем копию input для использования в потоках
+    InputData input_copy = std::move(input);
+
+    if (firstStepAnswers.empty()) {
+        return {0};
+    }
+
+    for (size_t i = 0; i < firstStepAnswers.size(); ++i) {
+        std::cout << "Solution #" << i << "\n" << firstStepAnswers[i] << "\n";
+    }
+
+    std::vector<std::optional<Solution>> solutions(firstStepAnswers.size());
+    std::vector<std::thread> threads;
+    threads.reserve(firstStepAnswers.size());
+
+    for (size_t i = 0; i < firstStepAnswers.size(); ++i) {
+        threads.emplace_back([&input_copy, &args, &firstStepAnswers, &solutions, i]() {
+            // вынуждены создавать копию тк строим отображение mapped (наверное можно выпилить костыль)
+            InputData thread_input = input_copy;
+            
+            Solution solution = Optimize(firstStepAnswers[i], thread_input, args);
+            
+            solutions[i] = std::move(solution);
+        });
+    }
+
+    for (auto& thread : threads) {
+        thread.join();
+    }
+
+    for (size_t i = 0; i < solutions.size(); ++i) {
+        if (solutions[i].has_value()) {
+            std::cout << "Solution from thread #" << i << ":\n";
+            std::cout << *solutions[i] << "\n";
+        }
+    }
+
+    Solution* best_solution = nullptr;
+    for (auto& sol : solutions) {
+        if (sol.has_value()) {
+            if (best_solution == nullptr || sol->score > best_solution->score) {
+                best_solution = &(*sol);
+            }
+        }
+    }
+
+    if (best_solution == nullptr) {
+        return {0};
+    }
+
+    std::cout << "\nBest solution (score: " << best_solution->score << "):\n";
+    std::cout << *best_solution << "\n";
+
+    return *best_solution;
 }
 
 int main(int argc, char *argv[]) {
