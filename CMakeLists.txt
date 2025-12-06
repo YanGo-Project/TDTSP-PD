@@ -35,7 +35,7 @@ target_link_libraries(algo PUBLIC utils)
 set(SOURCES main.cpp)
 
 add_executable(app ${SOURCES})
-target_link_libraries(app PRIVATE utils algo)
+target_link_libraries(app PRIVATE algo)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_definitions(-DDEBUG)
