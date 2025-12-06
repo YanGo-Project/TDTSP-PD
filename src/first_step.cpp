@@ -24,7 +24,7 @@ namespace {
         score_type time;
         score_type distance;
 
-        points_type load;
+        int64_t load;
 
         // для восстановления из dp[cur_load][last_vertex][candidate_idx]
         size_t candidate_idx;
@@ -45,13 +45,15 @@ namespace {
             answer.time = time;
             answer.distance = distance;
 
-            auto next_load = load - 1;
+            auto next_load = load;
             auto next_vertex = last_vertex;
             auto next_candidate_idx = candidate_idx;
 
-            while (next_load > 0) {
+            while (next_load >= 0) {
+
                 answer.vertexes.push_back(next_vertex);
-                const auto& cand = dp[next_load - 1][next_vertex][next_candidate_idx];
+
+                const auto& cand = dp[next_load][next_vertex][next_candidate_idx];
 
                 next_load -= 1;
                 next_vertex = cand.last_vertex;
@@ -130,7 +132,7 @@ std::vector<FirstStepAnswer> DoFirstStep(const InputData &input) {
     initial.value = 0;
     initial.time = 0;
     initial.distance = 0;
-    initial.load = 0;
+    initial.load = -1;
     dp[0][0].push_back(std::move(initial));
 
 
