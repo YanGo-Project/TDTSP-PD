@@ -9,7 +9,18 @@
 bool ParseProgramArguments(int argc, char *argv[], ProgramArguments &args) {
     int opt;
     args.save_csv = false;
-    while ((opt = getopt(argc, argv, "p:s:t:c:")) != -1) {
+    
+    // Значения по умолчанию для мета-параметров
+    args.meta.population_size = 10;
+    args.meta.alpha = 15;
+    args.meta.beta = 0.2;
+    args.meta.nloop = 10;
+    args.meta.kMax = 8;
+    args.meta.p = 0.1;
+    args.meta.max_iter_without_solution = 15;
+    args.meta.max_crossover_candidates = 4;
+    
+    while ((opt = getopt(argc, argv, "p:s:t:c:o:a:b:n:k:g:i:r:")) != -1) {
         switch (opt) {
             case 'p': {
                 args.problemJsonPath = optarg;
@@ -26,6 +37,38 @@ bool ParseProgramArguments(int argc, char *argv[], ProgramArguments &args) {
             case 'c': {
                 args.csv_file = optarg;
                 args.save_csv = true;
+                break;
+            }
+            case 'o': {
+                args.meta.population_size = std::stoul(optarg);
+                break;
+            }
+            case 'a': {
+                args.meta.alpha = std::stoul(optarg);
+                break;
+            }
+            case 'b': {
+                args.meta.beta = static_cast<float>(std::stoul(optarg)) / 10.f;
+                break;
+            }
+            case 'n': {
+                args.meta.nloop = std::stoul(optarg);
+                break;
+            }
+            case 'k': {
+                args.meta.kMax = std::stoul(optarg);
+                break;
+            }
+            case 'g': {
+                args.meta.p = static_cast<float>(std::stoul(optarg)) / 10.f;
+                break;
+            }
+            case 'i': {
+                args.meta.max_iter_without_solution = std::stoul(optarg);
+                break;
+            }
+            case 'r': {
+                args.meta.max_crossover_candidates = std::stoul(optarg);
                 break;
             }
             default: {

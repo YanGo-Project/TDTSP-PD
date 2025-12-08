@@ -35,19 +35,7 @@ Solution Optimize(const FirstStepAnswer& firstStepAnswer, InputData& input, cons
     
     Solution solution(std::move(tour), firstStepAnswer.distance, firstStepAnswer.time, firstStepAnswer.value);
 
-    MetaParameters params {
-        .population_size = 10,
-        .alpha = 15,
-        .beta = 0.2,
-        .nloop = 10,
-        .kMax = 8,
-        .p = 0.1,
-        .max_iter_without_solution = 15,
-        .max_crossover_candidates = 4,
-    };
-
     auto ctx = Context {
-        .params = params,
         .args = args
     };
 

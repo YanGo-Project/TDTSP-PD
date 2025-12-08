@@ -58,7 +58,7 @@ namespace {
 Solution applyTspTDPDP(Solution&& solution, const InputData &inputData, Context& ctx) {
 
     auto start = std::chrono::steady_clock::now();
-    const auto& params = ctx.params;
+    const auto& params = ctx.args.meta;
     auto max_time = ctx.args.time;
 #ifdef SAVE_STEPS
     uint64_t last_logged_time = 0;
