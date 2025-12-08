@@ -129,11 +129,11 @@ namespace {
         auto best = solution;
 
         size_t best_i = 0, best_j = 0;
-        for (size_t i = 1; i < path_size; ++i) {
-            for (size_t j = i + 1; j < path_size; ++j) {
+        for (size_t i = 1; i < path_size - 1; ++i) {
+            for (size_t j = i + 1; j < path_size - 1; ++j) {
                 const auto best_score = best.score;
 
-                std::reverse(best.tour.begin() + i, best.tour.begin() + j + 1);
+                std::reverse(best.tour.begin() + i, best.tour.begin() + j);
                 auto [distance, time, score] = inputData.get_path_time_distance_score(best.tour);
                 // возврат пути к исходному состоянию
                 std::reverse(best.tour.begin() + i, best.tour.begin() + j);
@@ -145,7 +145,7 @@ namespace {
         }
 
         if (best_i && best_j) {
-            std::reverse(best.tour.begin() + best_i, best.tour.begin() + best_j + 1);
+            std::reverse(best.tour.begin() + best_i, best.tour.begin() + best_j);
             auto [distance, time, score] = inputData.get_path_time_distance_score(best.tour);
             best.distance = distance, best.time = time, best.score = score;
         }
@@ -165,7 +165,7 @@ namespace {
         for (size_t i = 1; i + opt_size < path_size; ++i) {
             temp = solution;
             std::vector<vertexType> swap_elements(temp.tour.begin() + i, 
-                                           temp.tour.begin() + i + opt_size);
+                                                   temp.tour.begin() + i + opt_size);
             temp.tour.erase(temp.tour.begin() + i, temp.tour.begin() + i + opt_size);
             
             for (size_t j = 1; j < temp.tour.size(); ++j) {
