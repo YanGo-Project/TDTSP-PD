@@ -5,7 +5,7 @@
 #include <limits>
 #include <bitset>
 
-constexpr size_t TOP_SOLUTIONS_COUNT = 5;
+constexpr size_t TOP_SOLUTIONS_COUNT = 7;
 
 namespace {
     using score_type = FirstStepAnswer::score_type;

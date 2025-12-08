@@ -69,7 +69,7 @@ namespace {
         // лучшая позиция для swap, если такой нет, то останется нулем
         size_t best_i = 0;
         // меняем только внутренние вершины без первой и последней тк это депо
-        for (size_t i = 1; i < path_size - 1; ++i) {
+        for (size_t i = 1; i < path_size - 2; ++i) {
             auto best_score = best.score;
             best.tour[i] = std::exchange(best.tour[i + 1], best.tour[i]);
             auto [distance, time, score] = inputData.get_path_time_distance_score(best.tour);
