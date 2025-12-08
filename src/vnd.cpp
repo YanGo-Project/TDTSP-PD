@@ -158,6 +158,10 @@ namespace {
         auto best_score = solution.score;
         size_t best_i = 0, best_j = 0;
 
+        if (path_size < 4) {
+            return solution;
+        }
+
         opt_size = std::min(opt_size, path_size - 2);
 
         using vertexType = decltype(solution.tour)::value_type;
