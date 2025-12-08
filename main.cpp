@@ -57,13 +57,7 @@ Solution Solve(InputData &&input, const ProgramArguments& args) {
 
     if (args.save_csv) [[unlikely]] {
         std::ofstream csv(args.csv_file, std::ios::app);
-        csv << args.problemJsonPath << "," << firstStepAnswer.get_data_to_csv() << ",0\n";
-#ifdef SAVE_STEPS
-        for (const auto& info: ctx.time_iterations) {
-            csv << args.problemJsonPath << "," << info.score << "," << info.time << "," << info.distance << "," << info.timestamp << "\n";
-
-#endif
-        csv << args.problemJsonPath << "," << answer.get_data_to_csv() << "," << args.time << std::endl;
+        csv << args.problemJsonPath << "," << answer.get_data_to_csv() << std::endl;
     }
 
     return answer;

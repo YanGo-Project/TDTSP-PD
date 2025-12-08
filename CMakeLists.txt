@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 find_package(nlohmann_json REQUIRED)
 
+add_compile_options(-O3)
+
 set(UTILS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/utils")
 set(UTILS_SOURCES
         "${UTILS_DIR}/json_parser.cpp"
