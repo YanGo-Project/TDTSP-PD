@@ -70,10 +70,6 @@ Solution Solve(InputData &&input, const ProgramArguments& args) {
         return {0};
     }
 
-    for (size_t i = 0; i < firstStepAnswers.size(); ++i) {
-        std::cout << "Solution #" << i << "\n" << firstStepAnswers[i] << "\n";
-    }
-
     std::vector<std::optional<Solution>> solutions(firstStepAnswers.size());
     std::vector<std::thread> threads;
     threads.reserve(firstStepAnswers.size());
@@ -93,13 +89,6 @@ Solution Solve(InputData &&input, const ProgramArguments& args) {
         thread.join();
     }
 
-    for (size_t i = 0; i < solutions.size(); ++i) {
-        if (solutions[i].has_value()) {
-            std::cout << "Solution from thread #" << i << ":\n";
-            std::cout << *solutions[i] << "\n";
-        }
-    }
-
     Solution* best_solution = nullptr;
     for (auto& sol : solutions) {
         if (sol.has_value()) {
@@ -117,9 +106,6 @@ Solution Solve(InputData &&input, const ProgramArguments& args) {
         std::ofstream csv(args.csv_file, std::ios::app);
         csv << args.problemJsonPath << "," << (*best_solution).get_data_to_csv() << "\n";
     }
-
-    std::cout << "\nBest solution (score: " << best_solution->score << "):\n";
-    std::cout << *best_solution << "\n";
 
     return *best_solution;
 }
