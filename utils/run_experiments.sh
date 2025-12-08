@@ -22,7 +22,7 @@ FILES=(
     19.json 
     20.json 
     22.json 
-    24.json # проверить что тут может вызывать бесконечный цикл
+    24.json
     3.json  
     5.json  
     7.json  
