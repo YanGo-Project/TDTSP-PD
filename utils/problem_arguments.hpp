@@ -5,12 +5,25 @@
 #include <string>
 #include <map>
 
+struct MetaParameters {
+    int population_size;
+    int alpha;
+    double beta;
+    int nloop;
+    int kMax;
+    double p;
+    int max_iter_without_solution;
+    size_t max_crossover_candidates;
+};
+
+
 struct ProgramArguments {
     std::string problemJsonPath;
     std::string solutionJsonPath;
     uint64_t time;
     std::string csv_file;
     bool save_csv;
+    MetaParameters meta;
 };
 
 bool ParseProgramArguments(int argc, char *argv[], ProgramArguments &args);
