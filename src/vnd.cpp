@@ -51,7 +51,7 @@ namespace {
                     auto [distance, time, score] = inputData.get_path_time_distance_score(temp.tour);
                     temp.time = time, temp.distance = distance, temp.score = score;
 
-                    if (best.score < temp.score && temp.distance <= inputData.max_distance && temp.time <= inputData.max_time) {
+                    if (best.score < temp.score && temp.distance <= inputData.max_distance) {
                         best = std::move(temp);
                     }
                 }
@@ -75,7 +75,7 @@ namespace {
             auto [distance, time, score] = inputData.get_path_time_distance_score(best.tour);
             // возврат пути в прежнее состояние
             best.tour[i] = std::exchange(best.tour[i + 1], best.tour[i]);
-            if (best_score < score && time <= inputData.max_time &&  distance <= inputData.max_distance) {
+            if (best_score < score && distance <= inputData.max_distance) {
                 // в случае если не было улучшений возвращаем все как было
                 best_i = i, best_score = score;
             }
@@ -107,7 +107,7 @@ namespace {
                 auto [distance, time, score] = inputData.get_path_time_distance_score(best.tour);
                 // возврат к прежнему состоянию пути
                 best.tour[i] = std::exchange(best.tour[j], best.tour[i]);
-                if (best_score < score && time <= inputData.max_time && distance <= inputData.max_distance) {
+                if (best_score < score && distance <= inputData.max_distance) {
                     best_i = i, best_j = j, best_score = score;
                 }
             }
@@ -138,7 +138,7 @@ namespace {
                 // возврат пути к исходному состоянию
                 std::reverse(best.tour.begin() + i, best.tour.begin() + j);
 
-                if (best_score < score && time <= inputData.max_time && distance <= inputData.max_distance) {
+                if (best_score < score && distance <= inputData.max_distance) {
                     best_i = i, best_j = j, best_score = score;
                 };
             }
@@ -177,7 +177,7 @@ namespace {
                 auto [distance, time, score] = inputData.get_path_time_distance_score(temp.tour);
                 // возврат к старому положению
                 temp.tour.erase(temp.tour.begin() + j, temp.tour.begin() + j + opt_size);
-                if (best_score < score && time <= inputData.max_time && distance <= inputData.max_distance) {
+                if (best_score < score && distance <= inputData.max_distance) {
                     best_i = i, best_j = j, best_score = score;
                 };
             }
