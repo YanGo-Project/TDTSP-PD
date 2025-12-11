@@ -97,7 +97,7 @@ namespace {
         }
 
         std::sort(candidates.begin(), candidates.end(), 
-            [](auto& first, auto& second) {
+            [](const auto& first, const auto& second) {
                 return first.value > second.value;
             }    
         );
