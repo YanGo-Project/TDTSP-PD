@@ -1,0 +1,2 @@
+/usr/bin/ar qc libutils.a CMakeFiles/utils.dir/utils/json_parser.cpp.o CMakeFiles/utils.dir/utils/problem_arguments.cpp.o
+/usr/bin/ranlib libutils.a

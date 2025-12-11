@@ -1,0 +1,2 @@
+/usr/bin/ar qc libalgo.a CMakeFiles/algo.dir/src/first_step.cpp.o CMakeFiles/algo.dir/src/algorithm.cpp.o CMakeFiles/algo.dir/src/crossover.cpp.o CMakeFiles/algo.dir/src/init_population.cpp.o CMakeFiles/algo.dir/src/vnd.cpp.o CMakeFiles/algo.dir/src/vns.cpp.o
+/usr/bin/ranlib libalgo.a
