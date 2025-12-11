@@ -64,7 +64,7 @@ Solution Solve(InputData &&input, const ProgramArguments& args) {
     }
     
     // сохраняем копию input для использования в потоках
-    InputData input_copy = std::move(input);
+    const InputData input_copy = std::move(input);
 
     if (firstStepAnswers.empty()) {
         return {0};
