@@ -89,25 +89,25 @@ Solution Solve(InputData &&input, const ProgramArguments& args) {
         thread.join();
     }
 
-    Solution* best_solution = nullptr;
-    for (auto& sol : solutions) {
-        if (sol.has_value()) {
-            if (best_solution == nullptr || sol->score > best_solution->score) {
-                best_solution = &(*sol);
+    std::optional<size_t> best_index;
+    for (size_t i = 0; i < solutions.size(); ++i) {
+        if (solutions[i].has_value()) {
+            if (!best_index.has_value() || solutions[i]->score > solutions[*best_index]->score) {
+                best_index = i;
             }
         }
     }
 
-    if (best_solution == nullptr) {
+    if (!best_index.has_value()) {
         return {0};
     }
 
     if (args.save_csv) [[unlikely]] {
         std::ofstream csv(args.csv_file, std::ios::app);
-        csv << args.problemJsonPath << "," << (*best_solution).get_data_to_csv() << "\n";
+        csv << args.problemJsonPath << "," << solutions[*best_index]->get_data_to_csv() << "\n";
     }
 
-    return *best_solution;
+    return *solutions[*best_index];
 }
 
 int main(int argc, char *argv[]) {
