@@ -16,7 +16,7 @@ namespace {
         static constexpr size_t MAX_POINTS = bitset_size;
 
         // посещения в пути, вершина с индексом i лежит в ячейке visited[i - 1],
-        // чтобы не было коллизиий с депо
+        // чтобы не было коллизий с депо
         std::bitset<MAX_POINTS> visited;
 
         // информация о метриках
@@ -67,7 +67,7 @@ namespace {
     };
 
     template <size_t bitset_size>
-    inline bool isCandidateGood(const std::vector<Candidate<bitset_size>>& candidates, score_type value) {
+    inline bool IsCandidateGood(const std::vector<Candidate<bitset_size>>& candidates, score_type value) {
         if (candidates.empty() || candidates.size() < TOP_SOLUTIONS_COUNT) [[unlikely]] {
             return true;
         }
@@ -76,7 +76,7 @@ namespace {
     }
     
     template <size_t bitset_size>
-    inline void insertTopCandidate(std::vector<Candidate<bitset_size>>& candidates, Candidate<bitset_size>&& newCandidate) {
+    inline void InsertTopCandidate(std::vector<Candidate<bitset_size>>& candidates, Candidate<bitset_size>&& newCandidate) {
 
         bool duplicated = false;
         for (auto& existed_candidate : candidates) {
@@ -182,13 +182,13 @@ std::vector<FirstStepAnswer> DoFirstStep(const InputData &input) {
                             // проверки найденного пути на целевую функцию, максимальное время пути и максимальную дистанцию
                             if (new_point_time <= max_time &&
                                 new_point_dist <= max_dist && 
-                                isCandidateGood(candidates, new_point_score)
+                                IsCandidateGood(candidates, new_point_score)
                             ) {
                                 auto new_visited = prev_solution.visited;
                                 if (j > 0) {
                                     new_visited.set(j - 1);
                                 }
-                                insertTopCandidate(
+                                InsertTopCandidate(
                                     candidates,
                                     Candidate<bitset_size> {
                                         .visited = std::move(new_visited),
@@ -224,8 +224,8 @@ std::vector<FirstStepAnswer> DoFirstStep(const InputData &input) {
 
     for (points_type cur_load = min_load + 1; cur_load <= max_load + 1; ++cur_load) {
         for (auto& candidate : dp[cur_load][0]) {
-            if (isCandidateGood(answer_candidates, candidate.value)) {
-                insertTopCandidate(answer_candidates, std::move(candidate));
+            if (IsCandidateGood(answer_candidates, candidate.value)) {
+                InsertTopCandidate(answer_candidates, std::move(candidate));
             }
         }
     }
