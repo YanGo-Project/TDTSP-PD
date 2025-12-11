@@ -191,13 +191,13 @@ std::vector<FirstStepAnswer> DoFirstStep(const InputData &input) {
                                 insertTopCandidate(
                                     candidates,
                                     Candidate<bitset_size> {
+                                        .visited = std::move(new_visited),
+                                        .value = new_point_score,
                                         .time = new_point_time,
                                         .distance = new_point_dist,
-                                        .value = new_point_score,
-                                        .visited = std::move(new_visited),
+                                        .load = cur_load,
                                         .candidate_idx = candidate_idx,
-                                        .last_vertex = i,
-                                        .load = cur_load
+                                        .last_vertex = i
                                     }
                                 );
                             }
