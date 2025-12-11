@@ -1,0 +1,5 @@
+/home/runner/work/TDTSP-PD/TDTSP-PD/_codeql_build_dir/CMakeFiles/utils.dir
+/home/runner/work/TDTSP-PD/TDTSP-PD/_codeql_build_dir/CMakeFiles/algo.dir
+/home/runner/work/TDTSP-PD/TDTSP-PD/_codeql_build_dir/CMakeFiles/app.dir
+/home/runner/work/TDTSP-PD/TDTSP-PD/_codeql_build_dir/CMakeFiles/edit_cache.dir
+/home/runner/work/TDTSP-PD/TDTSP-PD/_codeql_build_dir/CMakeFiles/rebuild_cache.dir
