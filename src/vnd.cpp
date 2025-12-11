@@ -133,10 +133,10 @@ namespace {
         for (size_t i = 1; i < path_size - 1; ++i) {
             for (size_t j = i + 1; j < path_size - 1; ++j) {
 
-                std::reverse(best.tour.begin() + i, best.tour.begin() + j);
+                std::reverse(best.tour.begin() + i, best.tour.begin() + j + 1);
                 auto [distance, time, score] = inputData.get_path_time_distance_score(best.tour);
                 // возврат пути к исходному состоянию
-                std::reverse(best.tour.begin() + i, best.tour.begin() + j);
+                std::reverse(best.tour.begin() + i, best.tour.begin() + j + 1);
 
                 if (best_score < score && distance <= inputData.max_distance) {
                     best_i = i, best_j = j, best_score = score;
@@ -145,7 +145,7 @@ namespace {
         }
 
         if (best_i && best_j) {
-            std::reverse(best.tour.begin() + best_i, best.tour.begin() + best_j);
+            std::reverse(best.tour.begin() + best_i, best.tour.begin() + best_j + 1);
             auto [distance, time, score] = inputData.get_path_time_distance_score(best.tour);
             best.distance = distance, best.time = time, best.score = score;
         }
