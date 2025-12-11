@@ -9,13 +9,15 @@
 
 #include <iostream>
 #include <fstream>
+#include <thread>
+#include <vector>
+#include <algorithm>
+#include <optional>
 
 using points_type = FirstStepAnswer::points_type;
 
-Solution Solve(InputData &&input, const ProgramArguments& args) {
+Solution Optimize(const FirstStepAnswer& firstStepAnswer, InputData& input, const ProgramArguments& args) {
 
-    auto firstStepAnswer = DoFirstStep<true>(input);
-    
     // новый маршрут будет иметь вид 0 -> 1 -> 2 -> ... -> n -> 0
     std::vector<points_type> tour(firstStepAnswer.vertexes.size());
     // отображение из новых вершин в старые индексы
@@ -43,12 +45,69 @@ Solution Solve(InputData &&input, const ProgramArguments& args) {
         answer.tour[i] = input.from_new_to_old[answer.tour[i]];
     }
 
-    if (args.save_csv) [[unlikely]] {
-        std::ofstream csv(args.csv_file, std::ios::app);
-        csv << args.problemJsonPath << "," << answer.get_data_to_csv() << std::endl;
+    return answer;
+}
+
+Solution Solve(InputData &&input, const ProgramArguments& args) {
+
+    std::vector<FirstStepAnswer> firstStepAnswers;
+
+    // нужно чтобы нам bitset был хоть сколько-то гибким
+    if (input.points_count < 128) {
+        firstStepAnswers = DoFirstStep<128, true>(input);
+    } else if (input.points_count < 256) {
+        firstStepAnswers = DoFirstStep<256, true>(input);
+    } else if (input.points_count < 512) {
+        firstStepAnswers = DoFirstStep<512, true>(input);
+    } else {
+        firstStepAnswers = DoFirstStep<std::numeric_limits<InputData::points_type>::max(), true>(input);
+    }
+    
+    // сохраняем копию input для использования в потоках
+    const InputData input_copy = std::move(input);
+
+    if (firstStepAnswers.empty()) {
+        return {0};
     }
 
-    return answer;
+    std::vector<std::optional<Solution>> solutions(firstStepAnswers.size());
+    std::vector<std::thread> threads;
+    threads.reserve(firstStepAnswers.size());
+
+    for (size_t i = 0; i < firstStepAnswers.size(); ++i) {
+        threads.emplace_back([&input_copy, &args, &firstStepAnswers, &solutions, i]() {
+            // вынуждены создавать копию тк строим отображение mapped (наверное можно выпилить костыль)
+            InputData thread_input = input_copy;
+            
+            Solution solution = Optimize(firstStepAnswers[i], thread_input, args);
+            
+            solutions[i] = std::move(solution);
+        });
+    }
+
+    for (auto& thread : threads) {
+        thread.join();
+    }
+
+    std::optional<size_t> best_index;
+    for (size_t i = 0; i < solutions.size(); ++i) {
+        if (solutions[i].has_value()) {
+            if (!best_index.has_value() || solutions[i]->score > solutions[*best_index]->score) {
+                best_index = i;
+            }
+        }
+    }
+
+    if (!best_index.has_value()) {
+        return {0};
+    }
+
+    if (args.save_csv) [[unlikely]] {
+        std::ofstream csv(args.csv_file, std::ios::app);
+        csv << args.problemJsonPath << "," << solutions[*best_index]->get_data_to_csv() << "\n";
+    }
+
+    return *solutions[*best_index];
 }
 
 int main(int argc, char *argv[]) {

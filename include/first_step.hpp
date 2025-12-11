@@ -4,6 +4,7 @@
 #include <vector>
 #include <ostream>
 #include <unordered_set>
+#include <set>
 #include <limits>
 
 #include "../utils/problem_arguments.hpp"
@@ -21,17 +22,22 @@ struct FirstStepAnswer {
     /// список вершин в порядке обхода в пути
     std::vector<points_type> vertexes{0};
 
-    bool IsVertexInPath(points_type id);
-
-    void AddVertex(points_type vertex);
-
-    std::string get_data_to_csv() {
+    std::string get_data_to_csv() const {
         return std::to_string(value) + "," + std::to_string(time) + "," + std::to_string(distance);
+    }
+
+    bool operator<(const FirstStepAnswer& other) const {
+        return value < other.value;
+    }
+
+    bool operator==(const FirstStepAnswer& other) const {
+        return std::set<points_type>(vertexes.begin(), vertexes.end()) == 
+               std::set<points_type>(other.vertexes.begin(), other.vertexes.end());
     }
 };
 
-template<bool is_time_dependent = false>
-FirstStepAnswer DoFirstStep(const InputData &input);
+template<size_t bitset_size = std::numeric_limits<InputData::points_type>::max(), bool is_time_dependent = false>
+std::vector<FirstStepAnswer> DoFirstStep(const InputData &input);
 
 std::ostream &operator<<(std::ostream &os, const FirstStepAnswer &answer);
 

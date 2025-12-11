@@ -51,7 +51,7 @@ namespace {
                     auto [distance, time, score] = inputData.get_path_time_distance_score(temp.tour);
                     temp.time = time, temp.distance = distance, temp.score = score;
 
-                    if (best.score < temp.score && temp.distance <= inputData.max_distance && temp.time <= inputData.max_time) {
+                    if (best.score < temp.score && temp.distance <= inputData.max_distance) {
                         best = std::move(temp);
                     }
                 }
@@ -68,16 +68,16 @@ namespace {
 
         // лучшая позиция для swap, если такой нет, то останется нулем
         size_t best_i = 0;
+        auto best_score = best.score;
         // меняем только внутренние вершины без первой и последней тк это депо
-        for (size_t i = 1; i < path_size - 1; ++i) {
-            auto best_score = best.score;
+        for (size_t i = 1; i < path_size - 2; ++i) {
             best.tour[i] = std::exchange(best.tour[i + 1], best.tour[i]);
             auto [distance, time, score] = inputData.get_path_time_distance_score(best.tour);
             // возврат пути в прежнее состояние
             best.tour[i] = std::exchange(best.tour[i + 1], best.tour[i]);
-            if (best_score < score && time <= inputData.max_time &&  distance <= inputData.max_distance) {
+            if (best_score < score && distance <= inputData.max_distance) {
                 // в случае если не было улучшений возвращаем все как было
-                best_i = i;
+                best_i = i, best_score = score;
             }
         }
 
@@ -97,18 +97,18 @@ namespace {
 
         // аналогично как в SwapAdjacent
         size_t best_i = 0, best_j = 0;
+        auto best_score = best.score;
         // меняем только внутренние вершины без первой и последней тк это депо
         for (size_t i = 1; i < path_size - 1; ++i) {
             // чтобы менять только пары вида (i, j): i < j
             for (size_t j = i + 1; j < path_size - 1; ++j) {
 
-                auto best_score = best.score;
                 best.tour[i] = std::exchange(best.tour[j], best.tour[i]);
                 auto [distance, time, score] = inputData.get_path_time_distance_score(best.tour);
                 // возврат к прежнему состоянию пути
                 best.tour[i] = std::exchange(best.tour[j], best.tour[i]);
-                if (best_score < score && time <= inputData.max_time && distance <= inputData.max_distance) {
-                    best_i = i, best_j = j;
+                if (best_score < score && distance <= inputData.max_distance) {
+                    best_i = i, best_j = j, best_score = score;
                 }
             }
         }
@@ -127,19 +127,19 @@ namespace {
     Solution TwoOpt(const Solution &solution, const InputData &inputData) {
         const auto path_size = solution.tour.size();
         auto best = solution;
+        auto best_score = best.score;
 
         size_t best_i = 0, best_j = 0;
-        for (size_t i = 1; i < path_size; ++i) {
-            for (size_t j = i + 1; j < path_size; ++j) {
-                const auto best_score = best.score;
+        for (size_t i = 1; i < path_size - 1; ++i) {
+            for (size_t j = i + 1; j < path_size - 1; ++j) {
 
                 std::reverse(best.tour.begin() + i, best.tour.begin() + j + 1);
                 auto [distance, time, score] = inputData.get_path_time_distance_score(best.tour);
                 // возврат пути к исходному состоянию
-                std::reverse(best.tour.begin() + i, best.tour.begin() + j);
+                std::reverse(best.tour.begin() + i, best.tour.begin() + j + 1);
 
-                if (best_score < score && time <= inputData.max_time && distance <= inputData.max_distance) {
-                    best_i = i, best_j = j;
+                if (best_score < score && distance <= inputData.max_distance) {
+                    best_i = i, best_j = j, best_score = score;
                 };
             }
         }
@@ -158,6 +158,10 @@ namespace {
         auto best_score = solution.score;
         size_t best_i = 0, best_j = 0;
 
+        if (path_size < 4) {
+            return solution;
+        }
+
         opt_size = std::min(opt_size, path_size - 2);
 
         using vertexType = decltype(solution.tour)::value_type;
@@ -165,7 +169,7 @@ namespace {
         for (size_t i = 1; i + opt_size < path_size; ++i) {
             temp = solution;
             std::vector<vertexType> swap_elements(temp.tour.begin() + i, 
-                                           temp.tour.begin() + i + opt_size);
+                                                   temp.tour.begin() + i + opt_size);
             temp.tour.erase(temp.tour.begin() + i, temp.tour.begin() + i + opt_size);
             
             for (size_t j = 1; j < temp.tour.size(); ++j) {
@@ -173,8 +177,8 @@ namespace {
                 auto [distance, time, score] = inputData.get_path_time_distance_score(temp.tour);
                 // возврат к старому положению
                 temp.tour.erase(temp.tour.begin() + j, temp.tour.begin() + j + opt_size);
-                if (best_score < score && time <= inputData.max_time && distance <= inputData.max_distance) {
-                    best_i = i, best_j = j;
+                if (best_score < score && distance <= inputData.max_distance) {
+                    best_i = i, best_j = j, best_score = score;
                 };
             }
         }
