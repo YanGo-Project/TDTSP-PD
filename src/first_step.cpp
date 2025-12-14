@@ -107,6 +107,8 @@ namespace {
                 answer.emplace_back(std::move(cand));
             }
         }
+
+        candidates = std::move(answer);
     }
 
 }
