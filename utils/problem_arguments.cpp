@@ -11,14 +11,14 @@ bool ParseProgramArguments(int argc, char *argv[], ProgramArguments &args) {
     args.save_csv = false;
     
     // Значения по умолчанию для мета-параметров
-    args.meta.population_size = 10;
+    args.meta.population_size = 20;
     args.meta.alpha = 15;
     args.meta.beta = 0.2;
-    args.meta.nloop = 10;
-    args.meta.kMax = 8;
+    args.meta.nloop = 20;
+    args.meta.kMax = 10;
     args.meta.p = 0.1;
     args.meta.max_iter_without_solution = 15;
-    args.meta.max_crossover_candidates = 4;
+    args.meta.max_crossover_candidates = 3;
     
     while ((opt = getopt(argc, argv, "p:s:t:c:o:a:b:n:k:g:i:r:")) != -1) {
         switch (opt) {
