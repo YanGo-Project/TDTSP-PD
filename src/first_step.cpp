@@ -106,6 +106,10 @@ namespace {
             if (acceptable) {
                 answer.emplace_back(std::move(cand));
             }
+
+            if (answer.size() == TOP_SOLUTIONS_COUNT) {
+                break;
+            }
         }
 
         candidates = std::move(answer);
