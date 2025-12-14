@@ -64,6 +64,10 @@ namespace {
 
             return answer; // RVO 
         }
+
+        inline size_t Intersection(const Candidate<bitset_size>& other) noexcept {
+            return (visited & other.visited).count();
+        }
     };
 
     template <size_t bitset_size>
@@ -78,32 +82,30 @@ namespace {
     template <size_t bitset_size>
     inline void InsertTopCandidate(std::vector<Candidate<bitset_size>>& candidates, Candidate<bitset_size>&& newCandidate) {
 
-        bool duplicated = false;
-        for (auto& existed_candidate : candidates) {
-            if (existed_candidate.visited == newCandidate.visited) {
-                if (existed_candidate.value < newCandidate.value) {
-                    std::swap(existed_candidate, newCandidate);
-                } else {
-                    // уже есть такой путь и у него score лучше
-                    return;
-                }
-                duplicated = true;
-                break;
-            }
-        }
+        const size_t maximal_intersection = newCandidate.load * 0.9f;
 
-        if (!duplicated) {
-            candidates.emplace_back(std::move(newCandidate));
-        }
-
+        candidates.emplace_back(std::move(newCandidate));
         std::sort(candidates.begin(), candidates.end(), 
             [](const auto& first, const auto& second) {
                 return first.value > second.value;
             }    
         );
 
-        if (candidates.size() == TOP_SOLUTIONS_COUNT + 1) [[likely]] {
-            candidates.resize(TOP_SOLUTIONS_COUNT);
+        std::vector<Candidate<bitset_size>> answer;
+        answer.reserve(candidates.size());
+
+        for (auto&& cand: candidates) {
+            bool acceptable = true;
+            for (const auto& added: answer) {
+                if (cand.Intersection(added) >= maximal_intersection) {
+                    acceptable = false;
+                    break;
+                }
+            }
+
+            if (acceptable) {
+                answer.emplace_back(std::move(cand));
+            }
         }
     }
 
