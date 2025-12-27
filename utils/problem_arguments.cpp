@@ -101,8 +101,8 @@ int64_t InputData::get_time_dependent_cost(int64_t time,
     const auto time_matrix_idx = time / time_duration;
     const long double alpha = static_cast<long double>(time - time_duration * time_matrix_idx) / time_duration;
 
-    return static_cast<int64_t>(alpha * time_matrix[time_matrix_idx][from][to] +
-                                (1 - alpha) * time_matrix[time_matrix_idx + 1][from][to]);
+    return static_cast<int64_t>((1 - alpha) * time_matrix[time_matrix_idx][from][to] +
+                                alpha * time_matrix[time_matrix_idx + 1][from][to]);
 }
 
 std::tuple<int64_t, int64_t, int64_t>
